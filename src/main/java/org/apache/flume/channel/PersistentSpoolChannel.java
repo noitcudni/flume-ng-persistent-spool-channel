@@ -81,10 +81,12 @@ public class PersistentSpoolChannel extends BasicChannelSemantics {
 
     @Override
     protected void doPut(Event event) throws InterruptedException {
-      if( !spoolCheckPoint.putCheck(event.getHeaders().get(fileHeaderKey)) ) {
-        // still need to keep replaying.
-        spoolCheckPoint.replay();
-        return;
+      synchronized(chkptLock) {
+        if( !spoolCheckPoint.putCheck(event.getHeaders().get(fileHeaderKey)) ) {
+          // still need to keep replaying.
+          spoolCheckPoint.replay();
+          return;
+        }
       }
 
       channelCounter.incrementEventPutAttemptCount();
@@ -206,6 +208,7 @@ public class PersistentSpoolChannel extends BasicChannelSemantics {
   // lock to guard queue, mainly needed to keep it locked down during resizes
   // it should never be held through a blocking operation
   private Object queueLock = new Object();
+  private Object chkptLock = new Object();
 
   @GuardedBy(value = "queueLock")
   private LinkedBlockingDeque<Event> queue;

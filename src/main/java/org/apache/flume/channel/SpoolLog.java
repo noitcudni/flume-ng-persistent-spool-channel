@@ -66,10 +66,20 @@ public class SpoolLog {
     prop.setProperty(CURR_LOG_FILENAME_KEY, currDataFilename);
     prop.setProperty(CURR_LOG_OFFSET, Integer.toString(currDataOffset));
 
+    FileOutputStream os = null;
     try {
-      prop.store(new FileOutputStream(fullPath, false), null);
+      os = new FileOutputStream(fullPath, false);
+      prop.store(os, null);
     } catch (IOException e) {
       LOGGER.error("Can't commit checkpoint: " + fullPath, e);
+    } finally {
+      if (os != null) {
+        try {
+          os.close();
+        } catch (IOException e) {
+          LOGGER.error("Can't close file stream: " + fullPath, e);
+        }
+      }
     }
   }
 
@@ -93,10 +103,11 @@ public class SpoolLog {
 
     String dataFilename;
     String completedDatafilename;
+    FileInputStream is = null;
     int offset;
     try {
       Properties prop = new Properties();
-      FileInputStream is = new FileInputStream(fullPath);
+      is = new FileInputStream(fullPath);
       prop.load(is);
 
       dataFilename = prop.getProperty(CURR_LOG_FILENAME_KEY);
@@ -115,6 +126,14 @@ public class SpoolLog {
     } catch (IOException e) {
       LOGGER.error("Failed to close logReader", e);
       return;
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          LOGGER.error("Failed to close input stream" + fullPath, e);
+        }
+      }
     }
 
     // count the number of lines in the data file.
