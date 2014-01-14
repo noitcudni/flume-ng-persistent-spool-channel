@@ -45,7 +45,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.12.4</version>
         <configuration>
-          <skipTests>TRUE</skipTests>
+          <skipTests>True</skipTests>
+          <useFile>false</useFile>
         </configuration>
       </plugin>
     </plugins>
@@ -55,7 +56,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
